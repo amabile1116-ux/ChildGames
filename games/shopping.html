@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>おかいものゲーム</title>
+    <style>
+      :root {
+        --bg: #fff7e6;
+        --pink: #ff9ec1;
+        --blue: #9edcff;
+        --green: #9ee7a6;
+        --yellow: #ffd76b;
+        --text: #5d3f2b;
+        --muted: #7a5f4d;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        font-family: "ヒラギノ丸ゴ ProN", "Hiragino Sans", "Yu Gothic", sans-serif;
+        background: linear-gradient(180deg, var(--blue) 0%, var(--bg) 100%);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        touch-action: manipulation;
+        user-select: none;
+      }
+
+      .app {
+        width: min(100%, 460px);
+        background: rgba(255, 255, 255, 0.92);
+        border: 4px solid #fff;
+        border-radius: 24px;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        padding: 16px;
+      }
+
+      .title-screen,
+      .game-screen {
+        display: none;
+      }
+
+      .show {
+        display: block;
+      }
+
+      .title-screen {
+        text-align: center;
+        padding: 18px 8px 6px;
+      }
+
+      .title-screen h1 {
+        font-size: clamp(28px, 7vw, 42px);
+        margin: 8px 0 10px;
+      }
+
+      .title-screen p {
+        font-size: clamp(16px, 4vw, 20px);
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+
+      .start-btn,
+      .next-btn,
+      .register-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 14px 22px;
+        font-size: clamp(18px, 4.2vw, 24px);
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, var(--pink), #ff6b99);
+        box-shadow: 0 8px 0 #d96e94;
+        cursor: pointer;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .header .badge {
+        background: #fff;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .question {
+        font-size: clamp(24px, 5vw, 32px);
+        font-weight: 700;
+        text-align: center;
+        margin: 8px 0 12px;
+        min-height: 2.4em;
+      }
+
+      .basket {
+        background: linear-gradient(180deg, #fff4dc 0%, #ffe2aa 100%);
+        border: 3px dashed #d6a34b;
+        border-radius: 18px;
+        padding: 10px;
+        min-height: 96px;
+        margin-bottom: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-content: flex-start;
+      }
+
+      .basket-empty {
+        color: var(--muted);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 72px;
+      }
+
+      .basket-icon {
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 16px;
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+      }
+
+      .items {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .item-btn {
+        border: none;
+        background: #fff;
+        border-radius: 18px;
+        padding: 10px 6px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        font-size: clamp(16px, 4vw, 20px);
+        font-weight: 700;
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .item-btn:active,
+      .basket-icon:active,
+      .register-btn:active {
+        transform: scale(0.96);
+      }
+
+      .emoji {
+        display: block;
+        font-size: clamp(26px, 6vw, 36px);
+        margin-bottom: 4px;
+      }
+
+      .message {
+        text-align: center;
+        min-height: 48px;
+        font-size: clamp(20px, 4.5vw, 24px);
+        font-weight: 700;
+        margin: 10px 0 8px;
+      }
+
+      .celebrate {
+        color: #ff6b99;
+        animation: pop 0.6s ease-out;
+      }
+
+      .warning {
+        color: #5d5d5d;
+      }
+
+      .footer {
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      .register-area {
+        display: flex;
+        justify-content: center;
+        margin-top: 12px;
+      }
+
+      .sparkles {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .sparkle {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #ffd54f;
+        clip-path: polygon(50% 0%, 61% 35%, 100% 50%, 61% 65%, 50% 100%, 39% 65%, 0% 50%, 39% 35%);
+        animation: burst 0.7s ease-out forwards;
+        opacity: 0;
+      }
+
+      @keyframes pop {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      @keyframes burst {
+        0% { opacity: 1; transform: scale(0.4) translate(0, 0); }
+        100% { opacity: 0; transform: scale(1.2) translate(var(--x), var(--y)); }
+      }
+
+      @media (max-width: 480px) {
+        .app {
+          padding: 12px;
+          border-radius: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sparkles" id="sparkles"></div>
+    <div class="app">
+      <section class="title-screen show" id="titleScreen">
+        <h1>おかいものゲーム</h1>
+        <p>おかいものをして、ことばとかずをおぼえよう！</p>
+        <button class="start-btn" id="startBtn">スタート</button>
+      </section>
+
+      <section class="game-screen" id="gameScreen">
+        <div class="header">
+          <div class="badge" id="levelBadge">レベル 1</div>
+          <div class="badge" id="coinBadge">コイン 0</div>
+        </div>
+        <div class="question" id="question">りんごを 1こ かってね！</div>
+        <div class="basket" id="basket">
+          <div class="basket-empty" id="basketEmpty">かごに入れよう</div>
+        </div>
+        <div class="items" id="items"></div>
+        <div class="register-area">
+          <button class="register-btn" id="registerBtn">🛒 レジへ行く</button>
+        </div>
+        <div class="message" id="message"></div>
+        <div class="footer" id="footer">
+          <button class="next-btn" id="nextBtn">つぎへ</button>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const titleScreen = document.getElementById("titleScreen");
+      const gameScreen = document.getElementById("gameScreen");
+      const startBtn = document.getElementById("startBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const registerBtn = document.getElementById("registerBtn");
+      const questionEl = document.getElementById("question");
+      const basketEl = document.getElementById("basket");
+      const basketEmptyEl = document.getElementById("basketEmpty");
+      const itemsEl = document.getElementById("items");
+      const messageEl = document.getElementById("message");
+      const levelBadge = document.getElementById("levelBadge");
+      const coinBadge = document.getElementById("coinBadge");
+      const sparklesEl = document.getElementById("sparkles");
+
+      const items = [
+        { name: "りんご", emoji: "🍎", type: "fruit" },
+        { name: "バナナ", emoji: "🍌", type: "fruit" },
+        { name: "いちご", emoji: "🍓", type: "fruit" },
+        { name: "にんじん", emoji: "🥕", type: "vegetable" },
+        { name: "パン", emoji: "🥖", type: "bread" },
+        { name: "牛乳", emoji: "🥛", type: "drink" },
+      ];
+
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      let totalCorrectAnswers = 0;
+      let coins = 0;
+      let currentQuestion = null;
+      let selectedItems = [];
+      let isAnswered = false;
+      let currentLevelItems = [];
+
+      function playSound(type) {
+        if (!audioContext) return;
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch(() => {});
+        }
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.type = "sine";
+        const freqMap = {
+          correct: 880,
+          click: 660,
+          register: 1040,
+        };
+        oscillator.frequency.setValueAtTime(freqMap[type] || 520, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+        oscillator.start(now);
+        oscillator.stop(now + 0.25);
+      }
+
+      function createSparkles() {
+        for (let i = 0; i < 16; i += 1) {
+          const sparkle = document.createElement("span");
+          sparkle.className = "sparkle";
+          sparkle.style.left = `${Math.random() * 100}%`;
+          sparkle.style.top = `${Math.random() * 100}%`;
+          sparkle.style.setProperty("--x", `${(Math.random() - 0.5) * 120}px`);
+          sparkle.style.setProperty("--y", `${(Math.random() - 0.5) * 120}px`);
+          sparklesEl.appendChild(sparkle);
+          setTimeout(() => sparkle.remove(), 700);
+        }
+      }
+
+      function shuffle(array) {
+        const copy = [...array];
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function getLevel() {
+        return Math.min(3, Math.floor(totalCorrectAnswers / 5) + 1);
+      }
+
+      function getItemPool() {
+        const level = getLevel();
+        const poolSize = 4 + Math.min(level - 1, 2);
+        return shuffle(items).slice(0, poolSize);
+      }
+
+      function makeQuestion() {
+        const level = getLevel();
+        const amount = Math.min(level, 3);
+        const available = getItemPool();
+        const target = available[Math.floor(Math.random() * available.length)];
+        currentQuestion = {
+          item: target,
+          amount,
+        };
+        currentLevelItems = available;
+        questionEl.textContent = `${target.name}を ${amount}こ かってね！`;
+        renderItems();
+        selectedItems = [];
+        renderBasket();
+        messageEl.textContent = "";
+        messageEl.className = "message";
+        isAnswered = false;
+        nextBtn.style.display = "none";
+      }
+
+      function renderBasket() {
+        basketEl.innerHTML = "";
+        if (selectedItems.length === 0) {
+          basketEmptyEl.style.display = "flex";
+          basketEmptyEl.textContent = "かごに入れよう";
+          basketEl.appendChild(basketEmptyEl);
+          return;
+        }
+
+        selectedItems.forEach((item, index) => {
+          const button = document.createElement("button");
+          button.className = "basket-icon";
+          button.setAttribute("type", "button");
+          button.textContent = item.emoji;
+          button.title = `${item.name} をとりけす`;
+          button.addEventListener("click", () => {
+            if (isAnswered) return;
+            selectedItems.splice(index, 1);
+            renderBasket();
+          });
+          basketEl.appendChild(button);
+        });
+      }
+
+      function renderItems() {
+        itemsEl.innerHTML = "";
+        currentLevelItems.forEach((item) => {
+          const button = document.createElement("button");
+          button.className = "item-btn";
+          button.type = "button";
+          button.innerHTML = `<span class="emoji">${item.emoji}</span><span>${item.name}</span>`;
+          button.addEventListener("click", () => {
+            if (isAnswered) return;
+            playSound("click");
+            selectedItems.push(item);
+            renderBasket();
+          });
+          itemsEl.appendChild(button);
+        });
+      }
+
+      function evaluateBasket() {
+        if (isAnswered) return;
+        const correctCount = selectedItems.filter((item) => item.name === currentQuestion.item.name).length;
+        const isExact = selectedItems.length === currentQuestion.amount && correctCount === currentQuestion.amount;
+        if (isExact) {
+          isAnswered = true;
+          coins += 1;
+          totalCorrectAnswers += 1;
+          coinBadge.textContent = `コイン ${coins}`;
+          levelBadge.textContent = `レベル ${getLevel()}`;
+          messageEl.textContent = "せいかい！";
+          messageEl.className = "message celebrate";
+          playSound("register");
+          createSparkles();
+          nextBtn.style.display = "inline-block";
+        } else {
+          messageEl.textContent = "もういちど かんがえてみよう！";
+          messageEl.className = "message warning";
+          playSound("click");
+        }
+      }
+
+      function startGame() {
+        titleScreen.classList.remove("show");
+        gameScreen.classList.add("show");
+        totalCorrectAnswers = 0;
+        coins = 0;
+        levelBadge.textContent = "レベル 1";
+        coinBadge.textContent = "コイン 0";
+        makeQuestion();
+      }
+
+      function nextQuestion() {
+        makeQuestion();
+      }
+
+      startBtn.addEventListener("click", startGame);
+      registerBtn.addEventListener("click", evaluateBasket);
+      nextBtn.addEventListener("click", nextQuestion);
+    </script>
+  </body>
+</html>
