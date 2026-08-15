@@ -6,126 +6,226 @@
     <title>ChildGames - ゲームを選ぶ</title>
     <style>
       :root {
-        --bg: #fff7d6;
-        --accent: #ff8fab;
-        --muted: #6b6b6b;
-        --text: #5a3d2b;
+        --sky: #8fe3ff;
+        --sky-strong: #68d1ff;
+        --sun: #ffe77a;
+        --pink: #ff8bb8;
+        --peach: #ffc98d;
+        --purple: #c7a2ff;
+        --green: #8fe5b5;
+        --mint: #d9fff0;
+        --text: #50372b;
+        --card-text: #3d2a1f;
+        --shadow: rgba(61, 42, 31, 0.14);
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html {
+        overflow-x: hidden;
+      }
+
       body {
         margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: linear-gradient(180deg, #9fe3ff 0%, var(--bg) 100%);
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
+        font-family: "Hiragino Kaku Gothic Pro", "Yu Gothic", "Arial", sans-serif;
+        background: linear-gradient(180deg, #a7ebff 0%, #fff7d9 100%);
         color: var(--text);
+        overflow-x: hidden;
       }
 
-      .wrap {
-        width: min(980px, 100%);
-        max-width: 980px;
+      a {
+        color: inherit;
       }
 
-      header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
+      .page-shell {
+        width: min(980px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 28px;
       }
 
-      h1 {
+      .topbar {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      .brand {
         margin: 0;
-        font-size: clamp(20px, 4vw, 28px);
+        font-size: clamp(2.2rem, 7vw, 4.1rem);
+        line-height: 1.1;
+        letter-spacing: 0.05em;
+        font-weight: 900;
       }
 
       .lead {
-        margin: 8px 0 18px;
-        color: var(--muted);
-        line-height: 1.6;
+        margin: 10px 0 0;
+        font-size: clamp(1.2rem, 4vw, 2rem);
+        line-height: 1.2;
+        font-weight: 800;
       }
 
-      .grid {
+      .game-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
+        width: min(100%, 860px);
+        margin: 0 auto;
       }
 
       .card {
-        background: #fff;
-        border-radius: 14px;
-        padding: 18px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 210px;
+        padding: 20px 12px 16px;
+        border: 4px solid rgba(255, 255, 255, 0.7);
+        border-radius: 26px;
+        box-shadow: 0 12px 22px var(--shadow);
         text-align: center;
-      }
-
-      .card h3 {
-        margin: 0 0 8px;
-        font-size: 1.1rem;
-      }
-
-      .card p {
-        margin: 0 0 12px;
-        color: #666;
-        line-height: 1.5;
-      }
-
-      .btn {
-        display: inline-block;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, var(--accent), #ff5d7a);
-        color: #fff;
         text-decoration: none;
+        color: var(--card-text);
+        transform: translateY(0);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+        touch-action: manipulation;
+        user-select: none;
+      }
+
+      .card:active {
+        transform: translateY(2px) scale(0.98);
+      }
+
+      .card--balloon {
+        background: linear-gradient(180deg, #fff0b4 0%, #ffd3d8 100%);
+      }
+
+      .card--shopping {
+        background: linear-gradient(180deg, #d6f5c8 0%, #c5f0ff 100%);
+      }
+
+      .card--hiragana {
+        background: linear-gradient(180deg, #ffe4c5 0%, #ffd5ef 100%);
+      }
+
+      .card--number {
+        background: linear-gradient(180deg, #d8edff 0%, #d8f7d8 100%);
+      }
+
+      .card--color {
+        background: linear-gradient(180deg, #ffe7d6 0%, #e4dcff 100%);
+      }
+
+      .card--puzzle {
+        background: linear-gradient(180deg, #dfffe7 0%, #fff6bc 100%);
+      }
+
+      .card--future {
+        opacity: 0.95;
+        border-style: dashed;
+      }
+
+      .card-art {
+        display: block;
+        font-size: clamp(2.8rem, 7vw, 4.3rem);
+        line-height: 1;
+        margin-bottom: 10px;
+      }
+
+      .card-title {
+        display: block;
+        font-size: clamp(1.3rem, 3vw, 2rem);
+        font-weight: 900;
+        line-height: 1.2;
+      }
+
+      .card-sub {
+        display: block;
+        margin-top: 4px;
+        font-size: clamp(0.72rem, 2vw, 0.96rem);
         font-weight: 700;
+        opacity: 0.82;
       }
 
-      .disabled {
-        opacity: 0.6;
-        cursor: default;
-      }
+      @media (max-width: 640px) {
+        .page-shell {
+          width: min(100%, 430px);
+          padding: 12px 10px 20px;
+        }
 
-      footer {
-        margin-top: 18px;
-        text-align: center;
-        color: #444;
-        font-size: 14px;
+        .game-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .card {
+          min-height: 166px;
+          border-radius: 22px;
+          padding: 14px 10px 12px;
+          border-width: 3px;
+        }
+
+        .card-art {
+          font-size: clamp(2.3rem, 10vw, 3.2rem);
+          margin-bottom: 8px;
+        }
+
+        .card-title {
+          font-size: clamp(1.05rem, 5vw, 1.5rem);
+        }
+
+        .card-sub {
+          font-size: 0.72rem;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <header>
-        <h1>ChildGames</h1>
+    <div class="page-shell">
+      <header class="topbar">
+        <h1 class="brand">🌈 ChildGames 🌈</h1>
+        <p class="lead">どれで あそぶ？</p>
       </header>
-      <p class="lead">遊びたいゲームを選んでね。今は風船ゲームが遊べます。</p>
 
-      <div class="grid">
-        <div class="card">
-          <h3>風船ゲーム (Balloon)</h3>
-          <p>風船をタップして割る楽しいミニゲーム。レベルアップやゲームオーバーあり。</p>
-          <a class="btn" href="games/balloon.html">遊ぶ</a>
+      <main class="game-grid" aria-label="ゲーム一覧">
+        <a class="card card--balloon" href="games/balloon.html" aria-label="風船ゲーム">
+          <span class="card-art" aria-hidden="true">🎈</span>
+          <span class="card-title">ふうせん</span>
+          <span class="card-sub">ぽんぽん</span>
+        </a>
+
+        <a class="card card--shopping" href="games/shopping.html" aria-label="おかいもの">
+          <span class="card-art" aria-hidden="true">🛒</span>
+          <span class="card-title">おかいもの</span>
+          <span class="card-sub">りんごとおもちゃ</span>
+        </a>
+
+        <a class="card card--hiragana" href="games/hiragana.html" aria-label="ひらがな">
+          <span class="card-art" aria-hidden="true">✏️</span>
+          <span class="card-title">ひらがな</span>
+          <span class="card-sub">あ を なぞる</span>
+        </a>
+
+        <div class="card card--number card--future" aria-label="すうじゲーム">
+          <span class="card-art" aria-hidden="true">🔢</span>
+          <span class="card-title">すうじ</span>
+          <span class="card-sub">1 2 3</span>
         </div>
 
-        <div class="card">
-          <h3>おかいものゲーム</h3>
-          <p>数字・ひらがな・食べ物を楽しく覚えられるお買い物ゲームです。</p>
-          <a class="btn" href="games/shopping.html">遊ぶ</a>
+        <div class="card card--color card--future" aria-label="いろとかたちゲーム">
+          <span class="card-art" aria-hidden="true">○ △ □</span>
+          <span class="card-title">いろ・かたち</span>
+          <span class="card-sub">あお きれい</span>
         </div>
 
-        <div class="card">
-          <h3>ひらがな なぞり</h3>
-          <p>「に」「い」「な」をなぞって、ひらがなに慣れる最小プロトタイプです。</p>
-          <a class="btn" href="games/hiragana.html">遊ぶ</a>
+        <div class="card card--puzzle card--future" aria-label="パズルゲーム">
+          <span class="card-art" aria-hidden="true">🧩</span>
+          <span class="card-title">パズル</span>
+          <span class="card-sub">ぴったり</span>
         </div>
-      </div>
-
-      <footer>v1.0 • 追加のゲームは順次公開予定</footer>
+      </main>
     </div>
   </body>
 </html>
