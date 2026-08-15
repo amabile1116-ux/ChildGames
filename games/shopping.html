@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>おかいものゲーム</title>
+    <link rel="stylesheet" href="./game-common.css" />
     <style>
       :root {
         --bg: #fff7e6;
@@ -236,34 +237,37 @@
     </style>
   </head>
   <body>
-    <div class="sparkles" id="sparkles"></div>
-    <div class="app">
-      <section class="title-screen show" id="titleScreen">
-        <h1>おかいものゲーム</h1>
-        <p>おかいものをして、ことばとかずをおぼえよう！</p>
-        <button class="start-btn" id="startBtn">スタート</button>
-      </section>
+    <div class="game-shell">
+      <div class="sparkles" id="sparkles"></div>
+      <div class="app">
+        <section class="title-screen show" id="titleScreen">
+          <h1>おかいものゲーム</h1>
+          <p>おかいものをして、ことばとかずをおぼえよう！</p>
+          <button class="start-btn" id="startBtn">スタート</button>
+        </section>
 
-      <section class="game-screen" id="gameScreen">
-        <div class="header">
-          <div class="badge" id="levelBadge">レベル 1</div>
-          <div class="badge" id="coinBadge">コイン 0</div>
-        </div>
-        <div class="question" id="question">りんごを 1こ かってね！</div>
-        <div class="basket" id="basket">
-          <div class="basket-empty" id="basketEmpty">かごに入れよう</div>
-        </div>
-        <div class="items" id="items"></div>
-        <div class="register-area">
-          <button class="register-btn" id="registerBtn">🛒 レジへ行く</button>
-        </div>
-        <div class="message" id="message"></div>
-        <div class="footer" id="footer">
-          <button class="next-btn" id="nextBtn">つぎへ</button>
-        </div>
-      </section>
+        <section class="game-screen" id="gameScreen">
+          <div class="header">
+            <div class="badge" id="levelBadge">レベル 1</div>
+            <div class="badge" id="coinBadge">コイン 0</div>
+          </div>
+          <div class="question" id="question">りんごを 1こ かってね！</div>
+          <div class="basket" id="basket">
+            <div class="basket-empty" id="basketEmpty">かごに入れよう</div>
+          </div>
+          <div class="items" id="items"></div>
+          <div class="register-area">
+            <button class="register-btn" id="registerBtn">🛒 レジへ行く</button>
+          </div>
+          <div class="message" id="message"></div>
+          <div class="footer" id="footer">
+            <button class="next-btn" id="nextBtn">つぎへ</button>
+          </div>
+        </section>
+      </div>
     </div>
 
+    <script src="./game-common.js"></script>
     <script>
       const titleScreen = document.getElementById("titleScreen");
       const gameScreen = document.getElementById("gameScreen");

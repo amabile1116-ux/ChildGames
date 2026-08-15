@@ -1,0 +1,47 @@
+.game-shell {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-shell > * {
+  max-width: 100%;
+}
+
+@media (pointer: coarse) {
+  .game-shell,
+  .game-shell * {
+    overscroll-behavior: none;
+  }
+
+  .game-shell,
+  .game-shell .app,
+  .game-shell .game,
+  .game-shell .stage,
+  .game-shell .canvas-wrap,
+  .game-shell canvas,
+  .game-shell .basket,
+  .game-shell .items,
+  .game-shell .screen,
+  .game-shell .practice-box,
+  .game-shell .title-box,
+  .game-shell .clear-box {
+    touch-action: none;
+  }
+
+  .game-shell button,
+  .game-shell .primary-btn,
+  .game-shell .secondary-btn,
+  .game-shell .start-btn,
+  .game-shell .next-btn,
+  .game-shell .register-btn,
+  .game-shell .item-btn,
+  .game-shell .basket-icon,
+  .game-shell .balloon {
+    touch-action: manipulation;
+  }
+}
