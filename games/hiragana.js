@@ -11,6 +11,9 @@ const MIN_TARGET_PIXELS = 100;
 const AREA_THRESHOLD = 0.30;
 const MIN_SUCCESSFUL_AREAS_RATIO = 0.90;
 const MIN_OVERALL_HIT_RATIO = 0.15;
+const PRACTICE_CANVAS_SIZE = 360;
+const GUIDE_FONT_SCALE = 0.70;
+const GUIDE_VERTICAL_OFFSET = 0;
 
 const state = {
   word: WORDS[0],
@@ -80,8 +83,8 @@ function buildTargetCellsForChar(char) {
   offCtx.fillStyle = '#000000';
   offCtx.textAlign = 'center';
   offCtx.textBaseline = 'middle';
-  offCtx.font = '700 70px "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif';
-  offCtx.fillText(char, GRID_SIZE / 2, GRID_SIZE / 2);
+  offCtx.font = `700 ${Math.floor(GRID_SIZE * GUIDE_FONT_SCALE)}px "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif`;
+  offCtx.fillText(char, GRID_SIZE / 2, GRID_SIZE / 2 + GUIDE_VERTICAL_OFFSET);
 
   const imageData = offCtx.getImageData(0, 0, GRID_SIZE, GRID_SIZE).data;
   const cells = Array(9).fill(null).map(() => new Set());
@@ -129,8 +132,9 @@ function drawGuide() {
   ctx.fillStyle = 'rgba(92, 117, 255, 0.18)';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `700 ${Math.floor(width * 0.72)}px "Hiragino Sans", "Yu Gothic", sans-serif`;
-  ctx.fillText(state.currentChar, width / 2, height / 2 + 14);
+  const guideFontSize = Math.floor(width * GUIDE_FONT_SCALE);
+  ctx.font = `700 ${guideFontSize}px "Hiragino Sans", "Yu Gothic", sans-serif`;
+  ctx.fillText(state.currentChar, width / 2, height / 2 + GUIDE_VERTICAL_OFFSET);
 }
 
 function drawStroke(stroke) {
