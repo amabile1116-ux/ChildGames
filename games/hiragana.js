@@ -9,7 +9,7 @@ const GRID_SIZE = 100;
 const CELL_COUNT = 3;
 const MIN_TARGET_PIXELS = 100;
 const AREA_THRESHOLD = 0.30;
-const MIN_SUCCESSFUL_AREAS_RATIO = 0.70;
+const MIN_SUCCESSFUL_AREAS_RATIO = 0.90;
 const MIN_OVERALL_HIT_RATIO = 0.15;
 
 const state = {
@@ -80,8 +80,8 @@ function buildTargetCellsForChar(char) {
   offCtx.fillStyle = '#000000';
   offCtx.textAlign = 'center';
   offCtx.textBaseline = 'middle';
-  offCtx.font = '700 84px "Hiragino Sans", "Yu Gothic", sans-serif';
-  offCtx.fillText(char, GRID_SIZE / 2, GRID_SIZE / 2 + 10);
+  offCtx.font = '700 70px "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif';
+  offCtx.fillText(char, GRID_SIZE / 2, GRID_SIZE / 2);
 
   const imageData = offCtx.getImageData(0, 0, GRID_SIZE, GRID_SIZE).data;
   const cells = Array(9).fill(null).map(() => new Set());
@@ -91,7 +91,7 @@ function buildTargetCellsForChar(char) {
       const index = (y * GRID_SIZE + x) * 4;
       const alpha = imageData[index + 3];
 
-      if (alpha <= 20) {
+      if (alpha <= 0) {
         continue;
       }
 
@@ -162,8 +162,10 @@ function renderCanvas() {
 
 function getCanvasPoint(event) {
   const rect = canvas.getBoundingClientRect();
-  const x = ((event.clientX - rect.left) / rect.width) * canvas.width;
-  const y = ((event.clientY - rect.top) / rect.height) * canvas.height;
+  const scaleX = canvas.width / (rect.width || 1);
+  const scaleY = canvas.height / (rect.height || 1);
+  const x = (event.clientX - rect.left) * scaleX;
+  const y = (event.clientY - rect.top) * scaleY;
   return { x, y };
 }
 
@@ -226,9 +228,14 @@ function evaluateSuccess() {
       continue;
     }
 
-    validAreas.push(i);
     totalTargetPixels += targetSet.size;
     totalHitPixels += hitSet.size;
+
+    if (targetSet.size < MIN_TARGET_PIXELS) {
+      continue;
+    }
+
+    validAreas.push(i);
 
     const areaRatio = hitSet.size / targetSet.size;
     if (areaRatio >= AREA_THRESHOLD) {
