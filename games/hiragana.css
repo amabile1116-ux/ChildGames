@@ -1,0 +1,221 @@
+:root {
+  --bg1: #bfe7ff;
+  --bg2: #fff7d6;
+  --card: rgba(255, 255, 255, 0.9);
+  --primary: #ff7aa8;
+  --primary-dark: #de5b86;
+  --secondary: #7dc3ff;
+  --text: #4d3c2e;
+  --muted: #7d6a5d;
+  --line: #dfe8ff;
+  --guide: rgba(92, 117, 255, 0.20);
+  --success: #ff5d83;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+  color: var(--text);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.app {
+  width: min(100%, 460px);
+  min-height: 760px;
+  background: var(--card);
+  border-radius: 28px;
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 16px 32px rgba(48, 57, 84, 0.12);
+  padding: 18px 16px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.show {
+  display: block;
+}
+
+.title-box,
+.practice-box,
+.clear-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 700px;
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  box-shadow: 0 6px 12px rgba(73, 85, 114, 0.08);
+}
+
+h1 {
+  margin: 16px 0 8px;
+  font-size: clamp(30px, 7vw, 42px);
+  line-height: 1.2;
+}
+
+.lead {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: clamp(17px, 4.2vw, 22px);
+  line-height: 1.6;
+}
+
+.primary-btn,
+.secondary-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 16px 28px;
+  font-size: clamp(20px, 4.5vw, 24px);
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 10px 0 var(--primary-dark);
+  transition: transform 0.12s ease;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--primary), #ff6f96);
+}
+
+.secondary-btn {
+  background: linear-gradient(135deg, var(--secondary), #5da8ff);
+  box-shadow: 0 10px 0 #3d85d5;
+  padding: 12px 18px;
+  font-size: 1rem;
+}
+
+.primary-btn:active,
+.secondary-btn:active {
+  transform: scale(0.96);
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.word-label {
+  display: inline-block;
+  margin: 8px 0 12px;
+  font-size: clamp(34px, 8vw, 52px);
+  font-weight: 700;
+  color: var(--success);
+}
+
+.canvas-wrap {
+  width: min(100%, 360px);
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.7);
+  border: 4px solid rgba(130, 151, 255, 0.3);
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  position: relative;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.status-text {
+  min-height: 42px;
+  margin-top: 16px;
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.status-text.success {
+  color: var(--success);
+}
+
+.celebrate {
+  font-size: clamp(28px, 7vw, 40px);
+  font-weight: 700;
+  color: var(--success);
+  margin-bottom: 26px;
+}
+
+.sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #ffd74d;
+  clip-path: polygon(50% 0%, 61% 35%, 100% 50%, 61% 65%, 50% 100%, 39% 65%, 0% 50%, 39% 35%);
+  animation: burst 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx), var(--dy), 0) scale(1.4) rotate(180deg);
+  }
+}
+
+@media (max-width: 420px) {
+  body {
+    padding: 12px;
+  }
+
+  .app {
+    min-height: 100vh;
+    border-radius: 20px;
+    padding: 14px 12px 18px;
+  }
+
+  .title-box,
+  .practice-box,
+  .clear-box {
+    min-height: calc(100vh - 64px);
+  }
+}
