@@ -13,23 +13,14 @@
 }
 
 @media (pointer: coarse) {
-  .game-shell,
-  .game-shell * {
+  .game-shell {
     overscroll-behavior: none;
   }
 
-  .game-shell,
-  .game-shell .app,
-  .game-shell .game,
   .game-shell .stage,
   .game-shell .canvas-wrap,
   .game-shell canvas,
-  .game-shell .basket,
-  .game-shell .items,
-  .game-shell .screen,
-  .game-shell .practice-box,
-  .game-shell .title-box,
-  .game-shell .clear-box {
+  .game-shell .basket {
     touch-action: none;
   }
 

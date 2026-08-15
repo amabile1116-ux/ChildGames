@@ -5,32 +5,25 @@
     return window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
   }
 
-  function lockScroll(event) {
-    if (!isCoarsePointer()) {
-      return;
-    }
-
-    if (event.pointerType === 'mouse') {
-      return;
-    }
-
-    if (event.cancelable) {
-      event.preventDefault();
-    }
-  }
-
   function attachScrollLock() {
     const shells = document.querySelectorAll(shellSelector);
 
     shells.forEach((shell) => {
-      shell.addEventListener('pointerdown', lockScroll, { passive: false });
-      shell.addEventListener('pointermove', lockScroll, { passive: false });
-      shell.addEventListener('touchstart', (event) => {
+      shell.addEventListener('touchmove', (event) => {
+        if (!isCoarsePointer()) {
+          return;
+        }
+
         if (event.cancelable) {
           event.preventDefault();
         }
       }, { passive: false });
-      shell.addEventListener('touchmove', (event) => {
+
+      shell.addEventListener('wheel', (event) => {
+        if (!isCoarsePointer()) {
+          return;
+        }
+
         if (event.cancelable) {
           event.preventDefault();
         }
