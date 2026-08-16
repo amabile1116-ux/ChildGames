@@ -61,7 +61,7 @@ async function openPage(relativePath) {
   return { browser, page, server, port };
 }
 
-test('numbers normal mode follows the 1-5 random prompt flow while easy and hard stay unchanged', async () => {
+test('numbers normal mode keeps prompt flow and hard mode asks random small/big questions', async () => {
   const { browser, page, server, port } = await openPage('/games/numbers.html');
 
   try {
@@ -129,15 +129,78 @@ test('numbers normal mode follows the 1-5 random prompt flow while easy and hard
     assert.ok(nextPrompt >= 1 && nextPrompt <= 5, 'normal mode should advance to a fresh 1-5 prompt after the OK audio ends');
 
     await page.locator('#backBtn').click();
+    await page.evaluate(() => {
+      const originalRandom = Math.random.bind(Math);
+      window.__randomQueue = [
+        0.11, 0.81, 0.41, 0.20, 0.70, 0.30, 0.60, 0.20, // hard round 1: values + shuffles + "small"
+        0.61, 0.01, 0.31, 0.40, 0.80, 0.50, 0.90, 0.80  // hard round 2: values + shuffles + "big"
+      ];
+      Math.random = () => {
+        if (window.__randomQueue.length > 0) {
+          return window.__randomQueue.shift();
+        }
+        return originalRandom();
+      };
+
+      const OriginalAudio = window.Audio;
+      window.__audioPlayed = [];
+      window.Audio = class extends OriginalAudio {
+        constructor(src) {
+          super(src);
+          window.__audioPlayed.push(src);
+        }
+
+        play() {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              if (this.onended) {
+                this.onended();
+              }
+              resolve();
+            }, 0);
+          });
+        }
+      };
+    });
+
     await page.locator('.difficulty-card[data-mode="hard"]').click();
     await page.waitForSelector('.number-card');
+    await page.waitForFunction(() => (window.__audioPlayed || []).length >= 1);
 
     const hardValues = await page.locator('.number-card').evaluateAll((nodes) =>
       nodes.map((node) => Number(node.dataset.value))
     );
-    assert.equal(hardValues.length, 5);
+    assert.equal(hardValues.length, 3);
     assert.ok(hardValues.every((value) => value >= 1 && value <= 10));
     assert.equal(new Set(hardValues).size, hardValues.length, 'hard mode should use distinct values');
+
+    const firstHardPrompt = await page.evaluate(() => window.__currentHardPromptType || null);
+    assert.equal(firstHardPrompt, 'small', 'hard mode should ask the small-question prompt');
+    const firstAudio = await page.evaluate(() => window.__audioPlayed[0]);
+    assert.ok(firstAudio.endsWith('/sounds/small.mp3') || firstAudio === './sounds/small.mp3');
+
+    await page.locator('#playSequenceBtn').click();
+    await page.waitForFunction(() => (window.__audioPlayed || []).length >= 2);
+    const replayAudio = await page.evaluate(() => window.__audioPlayed[1]);
+    assert.ok(replayAudio.endsWith('/sounds/small.mp3') || replayAudio === './sounds/small.mp3');
+
+    const hardTargetValue = await page.evaluate(() => window.__currentHardTargetValue || null);
+    const wrongValue = hardValues.find((value) => value !== hardTargetValue);
+    assert.ok(Number.isFinite(wrongValue), 'hard mode should have a wrong option');
+
+    await page.locator(`.number-card[data-value="${wrongValue}"]`).first().click();
+    await page.waitForFunction(() => (window.__audioPlayed || []).length >= 3);
+    const ngAudio = await page.evaluate(() => window.__audioPlayed[2]);
+    assert.ok(ngAudio.endsWith('/sounds/NG.mp3') || ngAudio === './sounds/NG.mp3');
+    assert.equal(await page.locator('.number-card').count(), 3, 'wrong answer should not end the hard game');
+
+    await page.locator(`.number-card[data-value="${hardTargetValue}"]`).first().click();
+    await page.waitForFunction(() => (window.__audioPlayed || []).length >= 5);
+
+    const secondHardPrompt = await page.evaluate(() => window.__currentHardPromptType || null);
+    assert.equal(secondHardPrompt, 'big', 'after correct answer, hard mode should move to a big-question prompt');
+    const nextPromptAudio = await page.evaluate(() => window.__audioPlayed[4]);
+    assert.ok(nextPromptAudio.endsWith('/sounds/big.mp3') || nextPromptAudio === './sounds/big.mp3');
 
     await page.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'networkidle' });
     const homeLink = page.locator('a[href="games/numbers.html"]');

@@ -12,27 +12,30 @@
       <div class="app numbers-app">
         <section id="difficultyScreen" class="screen show" aria-label="難易度選択">
           <div class="title-box">
-            <div class="badge">すうじを ならべよう</div>
-            <h1>1 から しらべよう！</h1>
-            <p class="lead">なんまいで ならべる？</p>
+            <div class="badge">すうじゲーム</div>
+            <h1>どれで あそぶ？</h1>
+            <p class="lead">えらんでね！</p>
 
             <div class="difficulty-grid" aria-label="難易度選択">
-              <button class="difficulty-card" type="button" data-mode="easy" data-count="5" aria-label="かんたん 5枚">
-                <span class="difficulty-art" aria-hidden="true">5</span>
+              <button class="difficulty-card difficulty-card--easy" type="button" data-mode="easy" data-count="5" aria-label="かんたん 1からならべよう">
+                <span class="difficulty-art" aria-hidden="true">🔢</span>
                 <span class="difficulty-label">かんたん</span>
-                <span class="difficulty-mini">1〜5</span>
+                <span class="difficulty-mini">1から ならべよう</span>
+                <span class="difficulty-note">じゅんばんに タップ！</span>
               </button>
 
-              <button class="difficulty-card" type="button" data-mode="normal" data-count="5" aria-label="ふつう 5枚">
-                <span class="difficulty-art" aria-hidden="true">5</span>
+              <button class="difficulty-card difficulty-card--normal" type="button" data-mode="normal" data-count="5" aria-label="ふつう きいてえらぼう">
+                <span class="difficulty-art" aria-hidden="true">🔊</span>
                 <span class="difficulty-label">ふつう</span>
-                <span class="difficulty-mini">1〜10</span>
+                <span class="difficulty-mini">きいて えらぼう</span>
+                <span class="difficulty-note">おとを きいて タップ</span>
               </button>
 
-              <button class="difficulty-card" type="button" data-mode="hard" data-count="5" aria-label="むずかしい 5枚">
-                <span class="difficulty-art" aria-hidden="true">5</span>
+              <button class="difficulty-card difficulty-card--hard" type="button" data-mode="hard" data-count="5" aria-label="むずかしい おおきいちいさい">
+                <span class="difficulty-art" aria-hidden="true">❓</span>
                 <span class="difficulty-label">むずかしい</span>
-                <span class="difficulty-mini">1〜10</span>
+                <span class="difficulty-mini">おおきい？ ちいさい？</span>
+                <span class="difficulty-note">いちばんを さがそう</span>
               </button>
             </div>
           </div>

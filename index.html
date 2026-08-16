@@ -6,187 +6,247 @@
     <title>ChildGames - ゲームを選ぶ</title>
     <style>
       :root {
-        --sky: #8fe3ff;
-        --sky-strong: #68d1ff;
-        --sun: #ffe77a;
-        --pink: #ff8bb8;
-        --peach: #ffc98d;
-        --purple: #c7a2ff;
-        --green: #8fe5b5;
-        --mint: #d9fff0;
-        --text: #50372b;
-        --card-text: #3d2a1f;
-        --shadow: rgba(61, 42, 31, 0.14);
+        --paper: rgba(255, 255, 255, 0.94);
+        --text: #3f2a1f;
+        --sub: #6a4f41;
+        --green: #59bf4a;
+        --blue: #4f9df7;
+        --pink: #ff6f8f;
+        --orange: #ffb13b;
+        --shadow: rgba(120, 72, 37, 0.16);
       }
 
       * {
         box-sizing: border-box;
       }
 
-      html {
-        overflow-x: hidden;
-      }
-
       body {
         margin: 0;
-        min-height: 100vh;
+        min-height: 100dvh;
         font-family: "Hiragino Kaku Gothic Pro", "Yu Gothic", "Arial", sans-serif;
-        background: linear-gradient(180deg, #a7ebff 0%, #fff7d9 100%);
+        background: radial-gradient(circle at 25% 15%, #ffffff 0%, #fff7d9 48%, #ffeec8 100%);
         color: var(--text);
-        overflow-x: hidden;
-      }
-
-      a {
-        color: inherit;
+        overflow: hidden auto;
       }
 
       .page-shell {
-        width: min(980px, calc(100% - 20px));
+        position: relative;
+        width: min(1160px, calc(100% - 24px));
+        margin: 10px auto 24px;
+        padding: 18px 18px 20px;
+        border-radius: 38px;
+        background: var(--paper);
+        box-shadow: 0 18px 34px var(--shadow), inset 0 0 0 2px rgba(255, 255, 255, 0.95);
+      }
+
+      .float-shape {
+        position: absolute;
+        font-size: clamp(1.2rem, 3vw, 2rem);
+        opacity: 0.8;
+        pointer-events: none;
+      }
+
+      .shape-a { left: 28px; top: 30px; color: #f7a1bc; }
+      .shape-b { right: 34px; top: 34px; color: #88d7ff; }
+      .shape-c { left: 40px; bottom: 30px; color: #ffc851; }
+      .shape-d { right: 42px; bottom: 26px; color: #7ecf79; }
+
+      .top-voice {
+        width: min(520px, 100%);
         margin: 0 auto;
-        padding: 18px 0 28px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #ffe88d, #ffd96f);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
       }
 
-      .topbar {
-        text-align: center;
-        margin-bottom: 16px;
+      .voice-btn {
+        border: none;
+        background: rgba(255, 255, 255, 0.72);
+        color: #7f5a2f;
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        font-size: 1.3rem;
+        font-weight: 900;
+        cursor: pointer;
       }
 
-      .brand {
+      .voice-btn:active {
+        transform: translateY(1px) scale(0.97);
+      }
+
+      .top-voice-text {
         margin: 0;
-        font-size: clamp(2.2rem, 7vw, 4.1rem);
+        font-size: clamp(1.3rem, 3.4vw, 2.1rem);
+        font-weight: 900;
+        letter-spacing: 0.08em;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 10px 0 4px;
+      }
+
+      .title {
+        margin: 16px 0 8px;
+        font-size: clamp(2.1rem, 7.6vw, 5rem);
         line-height: 1.1;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.03em;
         font-weight: 900;
       }
 
+      .title .green { color: var(--green); }
+      .title .blue { color: var(--blue); }
+      .title .pink { color: var(--pink); }
+
       .lead {
-        margin: 10px 0 0;
-        font-size: clamp(1.2rem, 4vw, 2rem);
-        line-height: 1.2;
+        margin: 0;
+        font-size: clamp(1.1rem, 3vw, 2rem);
         font-weight: 800;
+        color: var(--sub);
       }
 
       .game-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-        width: min(100%, 860px);
-        margin: 0 auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 20px;
       }
 
       .card {
-        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        min-height: 210px;
-        padding: 20px 12px 16px;
-        border: 4px solid rgba(255, 255, 255, 0.7);
-        border-radius: 26px;
-        box-shadow: 0 12px 22px var(--shadow);
+        min-height: 220px;
+        padding: 16px 14px 14px;
+        border: 3px solid rgba(255, 255, 255, 0.95);
+        border-radius: 28px;
+        box-shadow: 0 10px 18px var(--shadow);
         text-align: center;
         text-decoration: none;
-        color: var(--card-text);
+        color: var(--text);
         transform: translateY(0);
-        transition: transform 0.12s ease, box-shadow 0.12s ease;
+        transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
         touch-action: manipulation;
         user-select: none;
       }
 
       .card:active {
-        transform: translateY(2px) scale(0.98);
+        transform: translateY(2px) scale(0.985);
       }
 
       .card--balloon {
-        background: linear-gradient(180deg, #fff0b4 0%, #ffd3d8 100%);
+        background: linear-gradient(180deg, #fff6b4, #ffe5c7);
       }
 
       .card--shopping {
-        background: linear-gradient(180deg, #d6f5c8 0%, #c5f0ff 100%);
+        background: linear-gradient(180deg, #d9ffd0, #dcf8ff);
       }
 
       .card--hiragana {
-        background: linear-gradient(180deg, #ffe4c5 0%, #ffd5ef 100%);
+        background: linear-gradient(180deg, #ffe4f1, #ffeec6);
       }
 
       .card--number {
-        background: linear-gradient(180deg, #d8edff 0%, #d8f7d8 100%);
+        background: linear-gradient(180deg, #dbecff, #e6f7ff);
       }
 
       .card--color {
-        background: linear-gradient(180deg, #ffe7d6 0%, #e4dcff 100%);
+        background: linear-gradient(180deg, #ffe8d9, #f0e7ff);
       }
 
       .card--puzzle {
-        background: linear-gradient(180deg, #dfffe7 0%, #fff6bc 100%);
+        background: linear-gradient(180deg, #e2ffe9, #fff3be);
       }
 
       .card--future {
-        opacity: 0.95;
+        opacity: 0.92;
         border-style: dashed;
       }
 
       .card-art {
         display: block;
-        font-size: clamp(2.8rem, 7vw, 4.3rem);
+        font-size: clamp(2.6rem, 7vw, 4rem);
         line-height: 1;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
 
       .card-title {
         display: block;
-        font-size: clamp(1.3rem, 3vw, 2rem);
+        font-size: clamp(1.25rem, 3.2vw, 2rem);
         font-weight: 900;
         line-height: 1.2;
       }
 
       .card-sub {
         display: block;
-        margin-top: 4px;
-        font-size: clamp(0.72rem, 2vw, 0.96rem);
+        margin-top: 6px;
+        font-size: clamp(0.78rem, 2vw, 0.98rem);
         font-weight: 700;
-        opacity: 0.82;
+        color: var(--sub);
+      }
+
+      .bottom-voice {
+        margin-top: 16px;
+        border-radius: 999px;
+        padding: 12px 16px;
+        background: linear-gradient(180deg, #fff7dd, #fff2ce);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 900;
+        color: #6a4b35;
       }
 
       @media (max-width: 640px) {
         .page-shell {
-          width: min(100%, 430px);
-          padding: 12px 10px 20px;
+          width: min(100%, 460px);
+          margin: 0;
+          border-radius: 0;
+          min-height: 100dvh;
+          padding: 12px 10px 18px;
         }
 
         .game-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: 1fr;
           gap: 12px;
         }
 
         .card {
-          min-height: 166px;
+          min-height: 156px;
           border-radius: 22px;
-          padding: 14px 10px 12px;
+          padding: 12px 10px 10px;
           border-width: 3px;
         }
 
-        .card-art {
-          font-size: clamp(2.3rem, 10vw, 3.2rem);
-          margin-bottom: 8px;
-        }
-
-        .card-title {
-          font-size: clamp(1.05rem, 5vw, 1.5rem);
-        }
-
-        .card-sub {
-          font-size: 0.72rem;
+        .float-shape {
+          display: none;
         }
       }
     </style>
   </head>
   <body>
     <div class="page-shell">
-      <header class="topbar">
-        <h1 class="brand">🌈 ChildGames 🌈</h1>
-        <p class="lead">どれで あそぶ？</p>
+      <span class="float-shape shape-a" aria-hidden="true">♪</span>
+      <span class="float-shape shape-b" aria-hidden="true">★</span>
+      <span class="float-shape shape-c" aria-hidden="true">●</span>
+      <span class="float-shape shape-d" aria-hidden="true">◆</span>
+
+      <div class="top-voice">
+        <p class="top-voice-text">たのしく あそぼう！</p>
+        <button id="topVoiceBtn" class="voice-btn" type="button" aria-label="トップ音声を再生">🔊</button>
+      </div>
+
+      <header class="hero">
+        <h1 class="title"><span class="pink">げ</span><span class="blue">ー</span><span class="green">む</span>を えらんでね！</h1>
+        <p class="lead">どのゲームに チャレンジする？</p>
       </header>
 
       <main class="game-grid" aria-label="ゲーム一覧">
@@ -226,6 +286,43 @@
           <span class="card-sub">ぴったり</span>
         </div>
       </main>
+
+      <div class="bottom-voice">
+        <span aria-hidden="true">💡</span>
+        <span>おとは いつでも ききなおせるよ！</span>
+        <button id="bottomVoiceBtn" class="voice-btn" type="button" aria-label="トップ音声を再生">🔊</button>
+      </div>
     </div>
+
+    <script>
+      (() => {
+        const topAudio = new Audio('games/sounds/Top.mp3');
+        topAudio.preload = 'auto';
+
+        const playTopAudio = () => {
+          topAudio.currentTime = 0;
+          topAudio.play().catch(() => {});
+        };
+
+        const unlockPlayback = () => {
+          if (topAudio.paused) {
+            playTopAudio();
+          }
+          document.removeEventListener('pointerdown', unlockPlayback);
+          document.removeEventListener('keydown', unlockPlayback);
+        };
+
+        document.getElementById('topVoiceBtn').addEventListener('click', playTopAudio);
+        document.getElementById('bottomVoiceBtn').addEventListener('click', playTopAudio);
+        document.addEventListener('pointerdown', unlockPlayback);
+        document.addEventListener('keydown', unlockPlayback);
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', playTopAudio, { once: true });
+          return;
+        }
+        playTopAudio();
+      })();
+    </script>
   </body>
 </html>

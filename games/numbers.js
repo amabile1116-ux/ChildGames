@@ -19,6 +19,9 @@ const state = {
   boardSlots: [],
   expectedOrder: [],
   promptValue: null,
+  hardPromptType: null,
+  hardTargetValue: null,
+  isRoundTransition: false,
   isClear: false,
   lastSpokenText: ''
 };
@@ -144,13 +147,44 @@ async function playNormalPrompt() {
   await playAudioFile('./sounds/choose.mp3');
 }
 
+async function playHardPrompt() {
+  if (state.mode !== 'hard' || !state.hardPromptType) {
+    return;
+  }
+
+  const fileName = state.hardPromptType === 'small' ? './sounds/small.mp3' : './sounds/big.mp3';
+  window.__lastSpokenText = state.hardPromptType === 'small' ? 'small' : 'big';
+  state.lastSpokenText = window.__lastSpokenText;
+  await playAudioFile(fileName);
+}
+
+function triggerModePrompt(mode) {
+  if (mode === 'normal') {
+    setTimeout(() => {
+      playNormalPrompt();
+    }, 150);
+    return;
+  }
+
+  if (mode === 'hard') {
+    setTimeout(() => {
+      playHardPrompt();
+    }, 150);
+  }
+}
+
 function nextRound(mode) {
   state.mode = mode;
   state.placement = [];
   state.isClear = false;
+  state.isRoundTransition = false;
   state.expectedOrder = [];
   state.promptValue = null;
+  state.hardPromptType = null;
+  state.hardTargetValue = null;
   window.__currentPromptValue = null;
+  window.__currentHardPromptType = null;
+  window.__currentHardTargetValue = null;
 
   if (mode === 'easy') {
     state.selectedCount = 5;
@@ -166,15 +200,20 @@ function nextRound(mode) {
     state.boardSlots = shuffle(buildBoardSlots(5));
     setStatus('');
   } else {
-    state.selectedCount = 5;
+    state.selectedCount = 3;
     const values = new Set();
-    while (values.size < 5) {
+    while (values.size < 3) {
       values.add(Math.floor(Math.random() * 10) + 1);
     }
-    state.expectedOrder = [...values].sort((a, b) => a - b);
-    state.boardValues = shuffle(state.expectedOrder);
-    state.boardSlots = shuffle(buildBoardSlots(5));
-    setStatus('ちいさい じゅんに ならべよう');
+    state.boardValues = shuffle([...values]);
+    state.boardSlots = shuffle(buildBoardSlots(3));
+    state.hardPromptType = Math.random() < 0.5 ? 'small' : 'big';
+    state.hardTargetValue = state.hardPromptType === 'small'
+      ? Math.min(...state.boardValues)
+      : Math.max(...state.boardValues);
+    window.__currentHardPromptType = state.hardPromptType;
+    window.__currentHardTargetValue = state.hardTargetValue;
+    setStatus('');
   }
 
   render();
@@ -188,6 +227,13 @@ function triggerClear() {
 }
 
 function renderPlacedArea() {
+  if (state.mode !== 'easy') {
+    placedArea.innerHTML = '';
+    placedArea.style.display = 'none';
+    return;
+  }
+
+  placedArea.style.display = 'flex';
   const slots = [];
   for (let index = 0; index < state.selectedCount; index += 1) {
     const value = state.placement[index];
@@ -242,6 +288,10 @@ function renderBoard() {
         return;
       }
 
+      if (state.isRoundTransition) {
+        return;
+      }
+
       if (state.mode === 'normal') {
         if (value === state.promptValue) {
           setStatus('');
@@ -250,9 +300,7 @@ function renderBoard() {
             await wait(500);
             nextRound('normal');
             setScreen('game');
-            setTimeout(() => {
-              playNormalPrompt();
-            }, 150);
+            triggerModePrompt('normal');
           })();
           return;
         }
@@ -267,34 +315,21 @@ function renderBoard() {
       }
 
       if (state.mode === 'hard') {
-        if (state.placement.includes(value)) {
-          return;
-        }
-
-        const expected = state.expectedOrder[state.placement.length];
-        if (value !== expected) {
+        if (value !== state.hardTargetValue) {
           playAudioFile('./sounds/NG.mp3');
-          state.placement = [];
-          render();
           setStatus('もういちど');
           return;
         }
 
-        state.placement.push(value);
-        render();
-
-        if (state.placement.length === state.expectedOrder.length) {
-          setStatus('🎉 せいかい！');
-          speakText('せいかい！');
-          setScreen('clear');
-          setTimeout(() => {
-            setScreen('game');
-            nextRound('hard');
-          }, 700);
-          return;
-        }
-
-        setStatus(`${state.placement.length}こ そろったよ`);
+        setStatus('');
+        state.isRoundTransition = true;
+        (async () => {
+          await speakText('せいかい！');
+          await wait(350);
+          nextRound('hard');
+          setScreen('game');
+          triggerModePrompt('hard');
+        })();
         return;
       }
 
@@ -320,7 +355,12 @@ function resetToDifficulty() {
   state.mode = 'easy';
   state.placement = [];
   state.promptValue = null;
+  state.hardPromptType = null;
+  state.hardTargetValue = null;
+  state.isRoundTransition = false;
   window.__currentPromptValue = null;
+  window.__currentHardPromptType = null;
+  window.__currentHardTargetValue = null;
   setScreen('difficulty');
   setStatus('1から ならべよう');
 }
@@ -330,11 +370,7 @@ document.querySelectorAll('.difficulty-card').forEach((card) => {
     const mode = card.dataset.mode || 'easy';
     nextRound(mode);
     setScreen('game');
-    if (mode === 'normal') {
-      setTimeout(() => {
-        playNormalPrompt();
-      }, 150);
-    }
+    triggerModePrompt(mode);
   });
 });
 
@@ -353,8 +389,8 @@ playSequenceBtn.addEventListener('click', async () => {
   }
 
   if (state.mode === 'hard') {
-    if (state.placement.length > 0) {
-      await speakSequence(state.placement);
+    if (!state.isRoundTransition) {
+      await playHardPrompt();
       return;
     }
     return;
@@ -380,14 +416,18 @@ backBtn.addEventListener('click', () => {
 restartBtn.addEventListener('click', () => {
   nextRound(state.mode || 'easy');
   setScreen('game');
+  triggerModePrompt(state.mode || 'easy');
 });
 
 clearRestartBtn.addEventListener('click', () => {
   nextRound(state.mode || 'easy');
   setScreen('game');
+  triggerModePrompt(state.mode || 'easy');
 });
 
 setScreen('difficulty');
 setStatus('1から ならべよう');
 window.__lastSpokenText = '';
 window.__currentPromptValue = null;
+window.__currentHardPromptType = null;
+window.__currentHardTargetValue = null;
