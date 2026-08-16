@@ -12,10 +12,13 @@ const NUMBER_WORDS = {
 };
 
 const state = {
-  selectedCount: 0,
+  mode: 'easy',
+  selectedCount: 5,
   placement: [],
   boardValues: [],
   boardSlots: [],
+  expectedOrder: [],
+  promptValue: null,
   isClear: false,
   lastSpokenText: ''
 };
@@ -41,7 +44,7 @@ function shuffle(array) {
 }
 
 function buildBoardSlots(count) {
-  const columns = count <= 3 ? 3 : count <= 5 ? 3 : 5;
+  const columns = 3;
   const rows = Math.ceil(count / columns);
   const slots = [];
 
@@ -64,6 +67,21 @@ function setScreen(target) {
   clearScreen.classList.toggle('show', target === 'clear');
 }
 
+function setStatus(message) {
+  statusText.textContent = message;
+  if (message === '') {
+    statusText.style.display = 'none';
+    return;
+  }
+  statusText.style.display = 'block';
+}
+
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function playAudioFile(fileName) {
   return new Promise((resolve) => {
     const audio = new Audio(fileName);
@@ -79,8 +97,7 @@ function speakText(text) {
   state.lastSpokenText = text;
 
   if (text === 'せいかい！') {
-    playAudioFile('./sounds/OK.mp3');
-    return;
+    return playAudioFile('./sounds/OK.mp3');
   }
 
   const values = String(text)
@@ -89,12 +106,14 @@ function speakText(text) {
     .filter((value) => Number.isFinite(value));
 
   if (values.length > 0) {
-    (async () => {
+    return (async () => {
       for (const value of values) {
         await playAudioFile(`./sounds/num_${value}.mp3`);
       }
     })();
   }
+
+  return Promise.resolve();
 }
 
 async function speakSequence(values) {
@@ -107,12 +126,65 @@ async function speakSequence(values) {
   }
 }
 
-function isCorrectOrder(values) {
-  return values.length === state.selectedCount && values.every((value, index) => value === index + 1);
+function isCorrectEasyOrder(values) {
+  return values.length === 5 && values.every((value, index) => value === index + 1);
 }
 
-function setStatus(message) {
-  statusText.textContent = message;
+async function playNormalPrompt() {
+  if (state.mode !== 'normal' || state.promptValue === null) {
+    return;
+  }
+
+  const value = state.promptValue;
+  window.__lastSpokenText = String(value);
+  state.lastSpokenText = String(value);
+
+  await playAudioFile(`./sounds/num_${value}.mp3`);
+  await wait(150);
+  await playAudioFile('./sounds/choose.mp3');
+}
+
+function nextRound(mode) {
+  state.mode = mode;
+  state.placement = [];
+  state.isClear = false;
+  state.expectedOrder = [];
+  state.promptValue = null;
+  window.__currentPromptValue = null;
+
+  if (mode === 'easy') {
+    state.selectedCount = 5;
+    state.boardValues = shuffle([1, 2, 3, 4, 5]);
+    state.boardSlots = shuffle(buildBoardSlots(5));
+    setStatus('1から ならべよう');
+  } else if (mode === 'normal') {
+    state.selectedCount = 5;
+    const target = Math.floor(Math.random() * 5) + 1;
+    state.promptValue = target;
+    window.__currentPromptValue = target;
+    state.boardValues = shuffle([1, 2, 3, 4, 5]);
+    state.boardSlots = shuffle(buildBoardSlots(5));
+    setStatus('');
+  } else {
+    state.selectedCount = 5;
+    const values = new Set();
+    while (values.size < 5) {
+      values.add(Math.floor(Math.random() * 10) + 1);
+    }
+    state.expectedOrder = [...values].sort((a, b) => a - b);
+    state.boardValues = shuffle(state.expectedOrder);
+    state.boardSlots = shuffle(buildBoardSlots(5));
+    setStatus('ちいさい じゅんに ならべよう');
+  }
+
+  render();
+}
+
+function triggerClear() {
+  state.isClear = true;
+  setStatus('🎉 せいかい！');
+  speakText('せいかい！');
+  setScreen('clear');
 }
 
 function renderPlacedArea() {
@@ -132,7 +204,12 @@ function renderPlacedArea() {
   placedArea.querySelectorAll('.placed-slot.filled').forEach((button) => {
     button.addEventListener('click', () => {
       const value = Number(button.dataset.value);
-      removePlacedValue(value);
+      const nextPlacement = state.placement.filter((item) => item !== value);
+      state.placement = nextPlacement;
+      render();
+      if (!state.isClear) {
+        setStatus(state.mode === 'easy' ? '1から ならべよう' : 'もういちど');
+      }
     });
   });
 }
@@ -150,10 +227,10 @@ function renderBoard() {
     card.className = 'number-card';
     card.dataset.value = String(value);
     card.textContent = value;
-    card.setAttribute('aria-label', `${value} を並べる`);
+    card.setAttribute('aria-label', `${value} を選ぶ`);
 
     const slot = state.boardSlots[index];
-    const columns = state.selectedCount <= 3 ? 3 : state.selectedCount <= 5 ? 3 : 5;
+    const columns = 3;
     const rows = Math.ceil(state.selectedCount / columns);
     const leftPercent = ((slot.col + 0.5) / columns) * 100;
     const topPercent = ((slot.row + 0.5) / rows) * 100;
@@ -161,41 +238,77 @@ function renderBoard() {
     card.style.top = `${topPercent}%`;
 
     card.addEventListener('click', () => {
-      addPlacedValue(value);
+      if (state.isClear) {
+        return;
+      }
+
+      if (state.mode === 'normal') {
+        if (value === state.promptValue) {
+          setStatus('');
+          (async () => {
+            await speakText('せいかい！');
+            await wait(500);
+            nextRound('normal');
+            setScreen('game');
+            setTimeout(() => {
+              playNormalPrompt();
+            }, 150);
+          })();
+          return;
+        }
+
+        (async () => {
+          await playAudioFile('./sounds/NG.mp3');
+          await wait(300);
+          await playNormalPrompt();
+        })();
+        setStatus('');
+        return;
+      }
+
+      if (state.mode === 'hard') {
+        if (state.placement.includes(value)) {
+          return;
+        }
+
+        const expected = state.expectedOrder[state.placement.length];
+        if (value !== expected) {
+          playAudioFile('./sounds/NG.mp3');
+          state.placement = [];
+          render();
+          setStatus('もういちど');
+          return;
+        }
+
+        state.placement.push(value);
+        render();
+
+        if (state.placement.length === state.expectedOrder.length) {
+          setStatus('🎉 せいかい！');
+          speakText('せいかい！');
+          setScreen('clear');
+          setTimeout(() => {
+            setScreen('game');
+            nextRound('hard');
+          }, 700);
+          return;
+        }
+
+        setStatus(`${state.placement.length}こ そろったよ`);
+        return;
+      }
+
+      if (state.placement.includes(value)) {
+        return;
+      }
+
+      state.placement.push(value);
+      render();
+      playAudioFile(`./sounds/num_${value}.mp3`).catch(() => {});
     });
 
     boardEl.appendChild(card);
   });
-}
-
-function addPlacedValue(value) {
-  if (state.isClear) {
-    return;
-  }
-
-  if (state.placement.includes(value)) {
-    return;
-  }
-
-  state.placement.push(value);
-  render();
-  playAudioFile(`./sounds/num_${value}.mp3`).catch(() => {});
-}
-
-function removePlacedValue(value) {
-  const nextPlacement = state.placement.filter((item) => item !== value);
-  state.placement = nextPlacement;
-  render();
-  if (!state.isClear) {
-    setStatus('1から ならべよう');
-  }
-}
-
-function triggerClear() {
-  state.isClear = true;
-  setStatus('🎉 せいかい！');
-  speakText('せいかい！');
-  setScreen('clear');
 }
 
 function render() {
@@ -203,30 +316,25 @@ function render() {
   renderBoard();
 }
 
-function startGame(count) {
-  state.selectedCount = count;
-  state.placement = [];
-  state.boardValues = Array.from({ length: count }, (_, index) => index + 1);
-  state.boardSlots = buildBoardSlots(count);
-  state.boardValues = shuffle(state.boardValues);
-  state.boardSlots = shuffle(state.boardSlots);
-  state.isClear = false;
-  setScreen('game');
-  setStatus('1から ならべよう');
-  render();
-}
-
 function resetToDifficulty() {
-  state.selectedCount = 0;
+  state.mode = 'easy';
   state.placement = [];
+  state.promptValue = null;
+  window.__currentPromptValue = null;
   setScreen('difficulty');
   setStatus('1から ならべよう');
 }
 
 document.querySelectorAll('.difficulty-card').forEach((card) => {
   card.addEventListener('click', () => {
-    const count = Number(card.dataset.count);
-    startGame(count);
+    const mode = card.dataset.mode || 'easy';
+    nextRound(mode);
+    setScreen('game');
+    if (mode === 'normal') {
+      setTimeout(() => {
+        playNormalPrompt();
+      }, 150);
+    }
   });
 });
 
@@ -235,9 +343,26 @@ playSequenceBtn.addEventListener('click', async () => {
     return;
   }
 
+  if (state.mode === 'normal') {
+    if (state.promptValue === null) {
+      return;
+    }
+    setStatus('');
+    playNormalPrompt();
+    return;
+  }
+
+  if (state.mode === 'hard') {
+    if (state.placement.length > 0) {
+      await speakSequence(state.placement);
+      return;
+    }
+    return;
+  }
+
   await speakSequence(state.placement);
 
-  if (isCorrectOrder(state.placement)) {
+  if (isCorrectEasyOrder(state.placement)) {
     triggerClear();
     return;
   }
@@ -253,17 +378,16 @@ backBtn.addEventListener('click', () => {
 });
 
 restartBtn.addEventListener('click', () => {
-  if (state.selectedCount > 0) {
-    startGame(state.selectedCount);
-  } else {
-    resetToDifficulty();
-  }
+  nextRound(state.mode || 'easy');
+  setScreen('game');
 });
 
 clearRestartBtn.addEventListener('click', () => {
-  resetToDifficulty();
+  nextRound(state.mode || 'easy');
+  setScreen('game');
 });
 
 setScreen('difficulty');
 setStatus('1から ならべよう');
 window.__lastSpokenText = '';
+window.__currentPromptValue = null;

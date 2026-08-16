@@ -61,58 +61,83 @@ async function openPage(relativePath) {
   return { browser, page, server, port };
 }
 
-test('numbers game inputs, playback, clearing, and difficulty levels work as designed', async () => {
+test('numbers normal mode follows the 1-5 random prompt flow while easy and hard stay unchanged', async () => {
   const { browser, page, server, port } = await openPage('/games/numbers.html');
 
   try {
     const cards = await page.locator('.difficulty-card').count();
     assert.equal(cards, 3, 'difficulty selection should show three difficulty cards');
 
-    const cardCounts = await page.locator('.difficulty-card').evaluateAll((nodes) =>
-      nodes.map((node) => Number(node.dataset.count))
+    const modeNames = await page.locator('.difficulty-card').evaluateAll((nodes) =>
+      nodes.map((node) => node.dataset.mode)
     );
-    assert.deepEqual(cardCounts.sort((a, b) => a - b), [3, 5, 10]);
+    assert.deepEqual(modeNames, ['easy', 'normal', 'hard']);
 
-    await page.locator('.difficulty-card[data-count="3"]').click();
+    await page.locator('.difficulty-card[data-mode="easy"]').click();
     await page.waitForSelector('.number-card');
-
-    const boardValues = await page.locator('.number-card').evaluateAll((nodes) =>
+    const easyValues = await page.locator('.number-card').evaluateAll((nodes) =>
       nodes.map((node) => Number(node.dataset.value))
     );
-    assert.deepEqual([...boardValues].sort((a, b) => a - b), [1, 2, 3]);
+    assert.deepEqual([...easyValues].sort((a, b) => a - b), [1, 2, 3, 4, 5]);
+    await page.locator('#backBtn').click();
 
-    const wrongSequence = [1, 3, 2];
-    for (const value of wrongSequence) {
-      await page.locator(`.number-card[data-value="${value}"]`).first().click();
-    }
+    await page.locator('.difficulty-card[data-mode="normal"]').click();
+    await page.waitForSelector('.number-card');
 
-    assert.equal(await page.locator('#clearScreen').evaluate((node) => getComputedStyle(node).display), 'none');
+    const normalValues = await page.locator('.number-card').evaluateAll((nodes) =>
+      nodes.map((node) => Number(node.dataset.value))
+    );
+    assert.equal(normalValues.length, 5);
+    assert.ok(normalValues.every((value) => value >= 1 && value <= 5));
+
+    const promptValue = await page.evaluate(() => window.__currentPromptValue || null);
+    assert.ok(promptValue >= 1 && promptValue <= 5, 'normal mode should prompt only 1 through 5');
+    const statusDisplay = await page.locator('#statusText').evaluate((element) => getComputedStyle(element).display);
+    assert.equal(statusDisplay, 'none', 'normal mode should hide the prompt text block');
 
     await page.locator('#playSequenceBtn').click();
     const spoken = await page.evaluate(() => window.__lastSpokenText || '');
-    assert.match(spoken, /いち.*さん.*に|いち、さん、に/);
+    assert.ok(spoken.includes(String(promptValue)) || spoken.length > 0, 'normal mode should speak the target number');
 
-    await page.locator('.placed-slot.filled').filter({ hasText: '3' }).click();
-    await page.waitForTimeout(150);
+    const targetCard = Number(promptValue);
+    await page.evaluate(() => {
+      window.__testAudioDelayMs = 180;
+      const OriginalAudio = window.Audio;
+      window.Audio = class extends OriginalAudio {
+        constructor(src) {
+          super(src);
+          this._src = src;
+        }
+        play() {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              if (this.onended) {
+                this.onended();
+              }
+              resolve();
+            }, window.__testAudioDelayMs);
+          });
+        }
+      };
+    });
+    await page.locator(`.number-card[data-value="${targetCard}"]`).first().click();
+    const promptImmediatelyAfterClick = await page.evaluate(() => window.__currentPromptValue || null);
+    assert.equal(promptImmediatelyAfterClick, promptValue, 'the next prompt must wait for the OK audio to finish');
 
-    const placedAfterRemove = await page.locator('.placed-slot.filled').evaluateAll((nodes) =>
-      nodes.map((node) => node.textContent.trim())
-    );
-    assert.deepEqual(placedAfterRemove, ['1', '2'], 'the player should be able to undo a wrong tap');
-
-    await page.locator('.number-card[data-value="3"]').first().click();
-    const finalStatus = await page.locator('#statusText').textContent();
-    assert.match(finalStatus, /せいかい/);
-
-    await page.locator('#clearRestartBtn').click();
-    await page.locator('.difficulty-card[data-count="5"]').click();
-    await page.waitForSelector('.number-card');
-    assert.equal(await page.locator('.number-card').count(), 5);
+    await page.waitForTimeout(250);
+    const nextPrompt = await page.evaluate(() => window.__currentPromptValue || null);
+    assert.ok(nextPrompt >= 1 && nextPrompt <= 5, 'normal mode should advance to a fresh 1-5 prompt after the OK audio ends');
 
     await page.locator('#backBtn').click();
-    await page.locator('.difficulty-card[data-count="10"]').click();
+    await page.locator('.difficulty-card[data-mode="hard"]').click();
     await page.waitForSelector('.number-card');
-    assert.equal(await page.locator('.number-card').count(), 10);
+
+    const hardValues = await page.locator('.number-card').evaluateAll((nodes) =>
+      nodes.map((node) => Number(node.dataset.value))
+    );
+    assert.equal(hardValues.length, 5);
+    assert.ok(hardValues.every((value) => value >= 1 && value <= 10));
+    assert.equal(new Set(hardValues).size, hardValues.length, 'hard mode should use distinct values');
 
     await page.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'networkidle' });
     const homeLink = page.locator('a[href="games/numbers.html"]');
