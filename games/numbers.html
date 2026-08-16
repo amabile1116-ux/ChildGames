@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>数字をならべよう</title>
+    <link rel="stylesheet" href="./game-common.css" />
+    <link rel="stylesheet" href="./numbers.css" />
+  </head>
+  <body>
+    <div class="game-shell">
+      <div class="app numbers-app">
+        <section id="difficultyScreen" class="screen show" aria-label="難易度選択">
+          <div class="title-box">
+            <div class="badge">すうじを ならべよう</div>
+            <h1>1 から しらべよう！</h1>
+            <p class="lead">なんまいで ならべる？</p>
+
+            <div class="difficulty-grid" aria-label="難易度選択">
+              <button class="difficulty-card" type="button" data-count="3" aria-label="かんたん 3枚">
+                <span class="difficulty-art" aria-hidden="true">3</span>
+                <span class="difficulty-label">かんたん</span>
+                <span class="difficulty-mini">1〜3</span>
+              </button>
+
+              <button class="difficulty-card" type="button" data-count="5" aria-label="ふつう 5枚">
+                <span class="difficulty-art" aria-hidden="true">5</span>
+                <span class="difficulty-label">ふつう</span>
+                <span class="difficulty-mini">1〜5</span>
+              </button>
+
+              <button class="difficulty-card" type="button" data-count="10" aria-label="むずかしい 10枚">
+                <span class="difficulty-art" aria-hidden="true">10</span>
+                <span class="difficulty-label">むずかしい</span>
+                <span class="difficulty-mini">1〜10</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="gameScreen" class="screen" aria-label="ゲーム画面">
+          <div class="game-header">
+            <button id="backBtn" type="button" class="mini-btn">もどる</button>
+            <div id="statusText" class="status-pill">1から ならべよう</div>
+            <button id="restartBtn" type="button" class="mini-btn">やりなおし</button>
+          </div>
+
+          <div class="play-row">
+            <button id="playSequenceBtn" class="play-btn" type="button" aria-label="並べた数字を再生">🔊 さいせい</button>
+          </div>
+
+          <div id="placedArea" class="placed-area" aria-live="polite"></div>
+
+          <div id="board" class="board" aria-label="数字カードの置き場"></div>
+        </section>
+
+        <section id="clearScreen" class="screen" aria-label="クリア画面">
+          <div class="clear-box">
+            <div class="clear-icon" aria-hidden="true">🎉</div>
+            <h2>せいかい！</h2>
+            <button id="clearRestartBtn" type="button" class="primary-btn">もういちど</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="./game-common.js"></script>
+    <script src="./numbers.js"></script>
+  </body>
+</html>
