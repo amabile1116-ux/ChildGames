@@ -295,13 +295,7 @@ function renderBoard() {
       if (state.mode === 'normal') {
         if (value === state.promptValue) {
           setStatus('');
-          (async () => {
-            await speakText('せいかい！');
-            await wait(500);
-            nextRound('normal');
-            setScreen('game');
-            triggerModePrompt('normal');
-          })();
+          triggerClear();
           return;
         }
 
@@ -322,14 +316,7 @@ function renderBoard() {
         }
 
         setStatus('');
-        state.isRoundTransition = true;
-        (async () => {
-          await speakText('せいかい！');
-          await wait(350);
-          nextRound('hard');
-          setScreen('game');
-          triggerModePrompt('hard');
-        })();
+        triggerClear();
         return;
       }
 

@@ -51,45 +51,43 @@
       .shape-c { left: 40px; bottom: 30px; color: #ffc851; }
       .shape-d { right: 42px; bottom: 26px; color: #7ecf79; }
 
-      .top-voice {
-        width: min(520px, 100%);
-        margin: 0 auto;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: linear-gradient(180deg, #ffe88d, #ffd96f);
-        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
+      .princess-wrap {
+        position: absolute;
+        left: 50%;
+        top: 18px;
+        transform: translateX(-50%);
+        width: 150px;
+        height: 150px;
+        z-index: 2;
       }
 
-      .voice-btn {
+      .princess-button {
+        width: 100%;
+        height: 100%;
         border: none;
-        background: rgba(255, 255, 255, 0.72);
-        color: #7f5a2f;
-        width: 44px;
-        height: 44px;
-        border-radius: 999px;
-        font-size: 1.3rem;
-        font-weight: 900;
+        background: transparent;
+        padding: 0;
         cursor: pointer;
+        display: block;
+        border-radius: 50%;
+        box-shadow: 0 12px 18px rgba(126, 82, 98, 0.12);
       }
 
-      .voice-btn:active {
-        transform: translateY(1px) scale(0.97);
+      .princess-button img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
       }
 
-      .top-voice-text {
-        margin: 0;
-        font-size: clamp(1.3rem, 3.4vw, 2.1rem);
-        font-weight: 900;
-        letter-spacing: 0.08em;
+      .princess-button:active {
+        transform: scale(0.97);
       }
 
       .hero {
         text-align: center;
-        padding: 10px 0 4px;
+        padding: 110px 0 4px;
       }
 
       .title {
@@ -191,39 +189,64 @@
         color: var(--sub);
       }
 
-      .bottom-voice {
-        margin-top: 16px;
-        border-radius: 999px;
-        padding: 12px 16px;
-        background: linear-gradient(180deg, #fff7dd, #fff2ce);
-        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        font-weight: 900;
-        color: #6a4b35;
-      }
-
       @media (max-width: 640px) {
+        body {
+          overflow-x: hidden;
+        }
+
         .page-shell {
-          width: min(100%, 460px);
-          margin: 0;
-          border-radius: 0;
-          min-height: 100dvh;
-          padding: 12px 10px 18px;
+          width: calc(100% - 8px);
+          margin: 0 auto;
+          border-radius: 20px;
+          min-height: auto;
+          padding: 8px 8px 10px;
+        }
+
+        .princess-wrap {
+          width: 96px;
+          height: 96px;
+          left: 50%;
+          top: 6px;
+        }
+
+        .hero {
+          padding: 84px 0 2px;
+        }
+
+        .title {
+          margin: 8px 0 4px;
+          font-size: clamp(1.7rem, 7vw, 2.7rem);
+        }
+
+        .lead {
+          font-size: 0.94rem;
         }
 
         .game-grid {
-          grid-template-columns: 1fr;
-          gap: 12px;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          margin-top: 10px;
         }
 
         .card {
-          min-height: 156px;
-          border-radius: 22px;
-          padding: 12px 10px 10px;
+          min-height: 118px;
+          border-radius: 18px;
+          padding: 8px 6px;
           border-width: 3px;
+        }
+
+        .card-art {
+          font-size: 1.9rem;
+          margin-bottom: 4px;
+        }
+
+        .card-title {
+          font-size: 0.98rem;
+        }
+
+        .card-sub {
+          margin-top: 3px;
+          font-size: 0.7rem;
         }
 
         .float-shape {
@@ -239,9 +262,10 @@
       <span class="float-shape shape-c" aria-hidden="true">●</span>
       <span class="float-shape shape-d" aria-hidden="true">◆</span>
 
-      <div class="top-voice">
-        <p class="top-voice-text">たのしく あそぼう！</p>
-        <button id="topVoiceBtn" class="voice-btn" type="button" aria-label="トップ音声を再生">🔊</button>
+      <div class="princess-wrap">
+        <button id="princessBtn" class="princess-button" type="button" aria-label="音声を再生">
+          <img src="./images/princess1.png" alt="プリンセス" />
+        </button>
       </div>
 
       <header class="hero">
@@ -287,11 +311,6 @@
         </div>
       </main>
 
-      <div class="bottom-voice">
-        <span aria-hidden="true">💡</span>
-        <span>おとは いつでも ききなおせるよ！</span>
-        <button id="bottomVoiceBtn" class="voice-btn" type="button" aria-label="トップ音声を再生">🔊</button>
-      </div>
     </div>
 
     <script>
@@ -304,24 +323,10 @@
           topAudio.play().catch(() => {});
         };
 
-        const unlockPlayback = () => {
-          if (topAudio.paused) {
-            playTopAudio();
-          }
-          document.removeEventListener('pointerdown', unlockPlayback);
-          document.removeEventListener('keydown', unlockPlayback);
-        };
-
-        document.getElementById('topVoiceBtn').addEventListener('click', playTopAudio);
-        document.getElementById('bottomVoiceBtn').addEventListener('click', playTopAudio);
-        document.addEventListener('pointerdown', unlockPlayback);
-        document.addEventListener('keydown', unlockPlayback);
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', playTopAudio, { once: true });
-          return;
+        const princessBtn = document.getElementById('princessBtn');
+        if (princessBtn) {
+          princessBtn.addEventListener('click', playTopAudio);
         }
-        playTopAudio();
       })();
     </script>
   </body>
