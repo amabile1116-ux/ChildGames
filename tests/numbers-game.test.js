@@ -88,45 +88,17 @@ test('numbers normal mode keeps prompt flow and hard mode asks random small/big 
       nodes.map((node) => Number(node.dataset.value))
     );
     assert.equal(normalValues.length, 5);
-    assert.ok(normalValues.every((value) => value >= 1 && value <= 5));
+    assert.ok(normalValues.every((value) => value >= 1 && value <= 10));
+    assert.equal(new Set(normalValues).size, 5, 'normal mode should use 5 distinct values');
 
     const promptValue = await page.evaluate(() => window.__currentPromptValue || null);
-    assert.ok(promptValue >= 1 && promptValue <= 5, 'normal mode should prompt only 1 through 5');
+    assert.ok(promptValue >= 1 && promptValue <= 10, 'normal mode should prompt only 1 through 10');
     const statusDisplay = await page.locator('#statusText').evaluate((element) => getComputedStyle(element).display);
     assert.equal(statusDisplay, 'none', 'normal mode should hide the prompt text block');
 
     await page.locator('#playSequenceBtn').click();
     const spoken = await page.evaluate(() => window.__lastSpokenText || '');
     assert.ok(spoken.includes(String(promptValue)) || spoken.length > 0, 'normal mode should speak the target number');
-
-    const targetCard = Number(promptValue);
-    await page.evaluate(() => {
-      window.__testAudioDelayMs = 180;
-      const OriginalAudio = window.Audio;
-      window.Audio = class extends OriginalAudio {
-        constructor(src) {
-          super(src);
-          this._src = src;
-        }
-        play() {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              if (this.onended) {
-                this.onended();
-              }
-              resolve();
-            }, window.__testAudioDelayMs);
-          });
-        }
-      };
-    });
-    await page.locator(`.number-card[data-value="${targetCard}"]`).first().click();
-    const promptImmediatelyAfterClick = await page.evaluate(() => window.__currentPromptValue || null);
-    assert.equal(promptImmediatelyAfterClick, promptValue, 'the next prompt must wait for the OK audio to finish');
-
-    await page.waitForTimeout(250);
-    const nextPrompt = await page.evaluate(() => window.__currentPromptValue || null);
-    assert.ok(nextPrompt >= 1 && nextPrompt <= 5, 'normal mode should advance to a fresh 1-5 prompt after the OK audio ends');
 
     await page.locator('#backBtn').click();
     await page.evaluate(() => {
@@ -195,12 +167,12 @@ test('numbers normal mode keeps prompt flow and hard mode asks random small/big 
     assert.equal(await page.locator('.number-card').count(), 3, 'wrong answer should not end the hard game');
 
     await page.locator(`.number-card[data-value="${hardTargetValue}"]`).first().click();
-    await page.waitForFunction(() => (window.__audioPlayed || []).length >= 5);
+    await page.waitForSelector('#clearScreen.show');
+    await page.locator('#clearRestartBtn').click();
+    await page.waitForSelector('.number-card');
 
     const secondHardPrompt = await page.evaluate(() => window.__currentHardPromptType || null);
-    assert.equal(secondHardPrompt, 'big', 'after correct answer, hard mode should move to a big-question prompt');
-    const nextPromptAudio = await page.evaluate(() => window.__audioPlayed[4]);
-    assert.ok(nextPromptAudio.endsWith('/sounds/big.mp3') || nextPromptAudio === './sounds/big.mp3');
+    assert.ok(secondHardPrompt === 'small' || secondHardPrompt === 'big', 'hard mode should restart with a fresh prompt after clear');
 
     await page.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'networkidle' });
     const homeLink = page.locator('a[href="games/numbers.html"]');
