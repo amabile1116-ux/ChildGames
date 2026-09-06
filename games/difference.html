@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>まちがいさがし</title>
+    <link rel="stylesheet" href="./game-common.css" />
+    <link rel="stylesheet" href="./difference.css" />
+  </head>
+  <body>
+    <div class="game-shell">
+      <div class="app difference-app">
+        <section id="modeScreen" class="screen show" aria-label="モード選択">
+          <div class="title-box">
+            <div class="badge">ちがいを さがそう</div>
+            <h1>まちがいさがし</h1>
+            <p class="lead">どっちで あそぶ？</p>
+
+            <div class="mode-grid">
+              <button class="mode-card mode-card--compare" type="button" data-mode="compare" aria-label="くらべてみつけよう">
+                <span class="mode-art" aria-hidden="true">🖼️</span>
+                <span class="mode-title">くらべて みつけよう</span>
+                <span class="mode-text">ふたつの えを みて ちがう ところを タップ！</span>
+              </button>
+
+              <button class="mode-card mode-card--memory" type="button" data-mode="memory" aria-label="おぼえてみつけよう">
+                <span class="mode-art" aria-hidden="true">🧠</span>
+                <span class="mode-title">おぼえて みつけよう</span>
+                <span class="mode-text">よーく みて おぼえてから ちがいを さがそう！</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="gameScreen" class="screen" aria-label="ゲーム画面">
+          <div class="game-header">
+            <button id="backBtn" type="button" class="mini-btn">もどる</button>
+            <div id="modeBadge" class="mode-pill">まちがいさがし</div>
+            <button id="retryBtn" type="button" class="mini-btn">やりなおし</button>
+          </div>
+
+          <div id="instructionText" class="instruction-text" aria-live="polite">ちがう ところを タップしてね！</div>
+          <div id="feedbackText" class="feedback-text" aria-live="polite"></div>
+
+          <div id="compareStage" class="stage-box">
+            <div class="compare-grid">
+              <div class="picture-card">
+                <div class="picture-label">ひだり</div>
+                <div class="image-panel" id="compareLeftPanel">
+                  <img id="compareLeftImage" class="scene-image" alt="まちがいさがしの左の絵" />
+                  <div class="marker-layer" id="compareLeftMarkers"></div>
+                  <button id="compareLeftHitbox" class="image-hitbox" type="button" aria-label="左の絵をタップ"></button>
+                </div>
+              </div>
+
+              <div class="picture-card">
+                <div class="picture-label">みぎ</div>
+                <div class="image-panel" id="compareRightPanel">
+                  <img id="compareRightImage" class="scene-image" alt="まちがいさがしの右の絵" />
+                  <div class="marker-layer" id="compareRightMarkers"></div>
+                  <button id="compareRightHitbox" class="image-hitbox" type="button" aria-label="右の絵をタップ"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="memoryStage" class="stage-box memory-stage hidden">
+            <div class="picture-card picture-card--single">
+              <div class="picture-label">おぼえた もの</div>
+              <div id="memoryBoard" class="memory-board" aria-live="polite"></div>
+              <div id="memoryOptions" class="memory-options" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="clearScreen" class="screen" aria-label="クリア画面">
+          <div class="clear-box">
+            <div class="clear-icon" aria-hidden="true">
+              <img src="../images/princess2.png" alt="プリンセス" />
+            </div>
+            <h2>せいかい！</h2>
+            <p id="clearText" class="clear-text">もういちど あそぼう！</p>
+            <button id="clearRestartBtn" class="primary-btn" type="button">もう一度</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="./game-common.js"></script>
+    <script src="./difference.js"></script>
+  </body>
+</html>
