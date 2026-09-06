@@ -84,7 +84,25 @@ async function tapAtPercent(locator, xPercent, yPercent) {
 }
 
 test('compare mode has five themed problems, random selection, and princess clear screen', async () => {
-  const { browser, page, server, pageErrors, consoleErrors } = await openPage('/index.html');
+  const { browser, page, server, pageErrors, consoleErrors } = await openPage('/index.html', () => {
+    window.__voiceCalls = [];
+
+    class MockAudio {
+      constructor(src) {
+        this.src = src;
+        this.preload = 'auto';
+        this.onended = null;
+        this.onerror = null;
+      }
+
+      play() {
+        window.__voiceCalls.push(this.src);
+        return Promise.resolve();
+      }
+    }
+
+    window.Audio = MockAudio;
+  });
 
   try {
     await page.locator('a[href="games/difference.html"]').click();
@@ -108,8 +126,13 @@ test('compare mode has five themed problems, random selection, and princess clea
 
     const compareRightHitbox = page.locator('#compareRightHitbox');
     const firstDifference = await page.evaluate(() => window.__differenceDebug.getCurrentCompareProblem().differences[0]);
+    await tapAtPercent(compareRightHitbox, 10, 10);
+    await page.waitForTimeout(100);
+    assert.ok((await page.evaluate(() => window.__voiceCalls.some((src) => src.includes('NG.mp3')))), 'wrong answer should play NG sound');
+
     await tapAtPercent(compareRightHitbox, firstDifference.x, firstDifference.y);
     await page.waitForSelector('#clearScreen.show');
+    assert.ok((await page.evaluate(() => window.__voiceCalls.some((src) => src.includes('OK.mp3')))), 'correct answer should play OK sound');
 
     await page.locator('#clearScreen img[alt="プリンセス"]').waitFor();
     assert.match(await page.locator('#clearText').textContent(), /くらべて/);
@@ -167,8 +190,13 @@ test('memory mode plays voice1, voice2, and replays with a new question', async 
 
     assert.match(await page.locator('#instructionText').textContent(), /なくなった ものは どれかな/);
 
-    const firstMissingId = await page.evaluate(() => window.__differenceDebug.getMemoryProblem().missingId);
-    const answer = page.locator(`.memory-option[data-id="${firstMissingId}"]`);
+    const memoryProblem = await page.evaluate(() => window.__differenceDebug.getMemoryProblem());
+    const firstMissingId = memoryProblem.missingId;
+    const visibleIds = memoryProblem.items.map((item) => item.id);
+    const optionIds = await page.locator('.memory-option').evaluateAll((nodes) => nodes.map((node) => node.dataset.id));
+    const visibleOverlap = optionIds.filter((id) => visibleIds.includes(id)).length;
+    assert.ok(visibleOverlap < optionIds.length, 'memory options should not be identical to the remembered item list');
+    const answer = page.locator(`.memory-option[data-id="${memoryProblem.missingId}"]`);
     await answer.waitFor();
     await answer.click();
     await page.waitForSelector('#clearScreen.show');

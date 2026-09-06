@@ -348,6 +348,10 @@ const DEFAULT_VOICE_CONFIG = {
   voice2: { enabled: true, path: './sounds/voice2.mp3' }
 };
 
+const audioPlaybackState = {
+  current: null
+};
+
 const state = {
   mode: null,
   isSolved: false,
@@ -399,22 +403,42 @@ function getVoiceConfig() {
   };
 }
 
-function safelyPlayAudio(fileName) {
+function playAudioFile(fileName) {
   return new Promise((resolve) => {
+    if (audioPlaybackState.current) {
+      try {
+        audioPlaybackState.current.pause();
+        audioPlaybackState.current.currentTime = 0;
+      } catch (error) {
+        // ignore browser-specific pause failures
+      }
+      audioPlaybackState.current = null;
+    }
+
     try {
       const audio = new Audio(fileName);
       audio.preload = 'auto';
-      const finish = () => resolve();
+      audioPlaybackState.current = audio;
+      const finish = () => {
+        if (audioPlaybackState.current === audio) {
+          audioPlaybackState.current = null;
+        }
+        resolve();
+      };
       audio.onended = finish;
       audio.onerror = finish;
       const playResult = audio.play();
       if (playResult && typeof playResult.catch === 'function') {
-        playResult.catch(() => resolve());
+        playResult.catch(() => finish());
       }
     } catch (error) {
       resolve();
     }
   });
+}
+
+function safelyPlayAudio(fileName) {
+  return playAudioFile(fileName);
 }
 
 function playVoiceOnce(voiceKey) {
@@ -578,6 +602,7 @@ function handleCorrect(diff) {
 
   state.isSolved = true;
   showCorrectMarkers(diff);
+  playAudioFile('./sounds/OK.mp3');
   setFeedback('せいかい！', 'success');
   setInstruction('みつけたね！');
   state.clearTimerId = setTimeout(goToClearScreen, 900);
@@ -585,12 +610,14 @@ function handleCorrect(diff) {
 
 function handleMiss(event, point) {
   if (state.mode !== 'compare') {
+    playAudioFile('./sounds/NG.mp3');
     setFeedback('おしい！ もういちど えらんでね', 'warning');
     return;
   }
 
   const layer = event.currentTarget === compareLeftHitbox ? compareLeftMarkers : compareRightMarkers;
   addMissMarker(layer, point);
+  playAudioFile('./sounds/NG.mp3');
   setFeedback('おしい！ もういちど タップしてね', 'warning');
 }
 
@@ -650,10 +677,18 @@ function renderMemoryOptions() {
     return;
   }
 
-  memoryOptions.innerHTML = '';
-  const items = shuffle(currentProblem().items);
+  const problem = currentProblem();
+  const categoryItems = MEMORY_ITEMS[problem.category] || [];
+  const visibleIds = new Set(problem.items.map((item) => item.id));
+  const missingItem = categoryItems.find((item) => item.id === problem.missingId) || problem.items[0];
+  const distractors = shuffle(
+    categoryItems.filter((item) => item.id !== missingItem.id && !visibleIds.has(item.id))
+  ).slice(0, 2);
+  const options = shuffle([missingItem, ...distractors]);
 
-  items.forEach((item) => {
+  memoryOptions.innerHTML = '';
+
+  options.forEach((item) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'memory-option';
@@ -665,11 +700,13 @@ function renderMemoryOptions() {
       }
       if (item.id === state.memoryMissingId) {
         state.isSolved = true;
+        playAudioFile('./sounds/OK.mp3');
         setFeedback('せいかい！', 'success');
         setInstruction('なくなった ものを みつけたね！');
         button.classList.add('is-correct');
         setTimeout(() => goToClearScreen(), 800);
       } else {
+        playAudioFile('./sounds/NG.mp3');
         setFeedback('ちがうよ！ もういちど えらんでね', 'warning');
       }
     });
