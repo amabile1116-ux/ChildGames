@@ -85,13 +85,42 @@ function wait(ms) {
   });
 }
 
+const audioPlaybackState = {
+  current: null
+};
+
 function playAudioFile(fileName) {
   return new Promise((resolve) => {
+    if (audioPlaybackState.current) {
+      try {
+        audioPlaybackState.current.pause();
+        audioPlaybackState.current.currentTime = 0;
+      } catch (error) {
+        // ignore browser-specific pause failures
+      }
+      audioPlaybackState.current = null;
+    }
+
     const audio = new Audio(fileName);
     audio.preload = 'auto';
-    audio.onended = () => resolve();
-    audio.onerror = () => resolve();
-    audio.play().catch(() => resolve());
+    audioPlaybackState.current = audio;
+
+    const finish = () => {
+      if (audioPlaybackState.current === audio) {
+        audioPlaybackState.current = null;
+      }
+      resolve();
+    };
+
+    audio.onended = finish;
+    audio.onerror = finish;
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {
+        finish();
+      });
+    }
   });
 }
 
@@ -193,10 +222,11 @@ function nextRound(mode) {
     setStatus('1から ならべよう');
   } else if (mode === 'normal') {
     state.selectedCount = 5;
-    const target = Math.floor(Math.random() * 5) + 1;
+    const numbers = shuffle(Array.from({ length: 10 }, (_, index) => index + 1)).slice(0, 5);
+    const target = numbers[Math.floor(Math.random() * numbers.length)];
     state.promptValue = target;
     window.__currentPromptValue = target;
-    state.boardValues = shuffle([1, 2, 3, 4, 5]);
+    state.boardValues = numbers;
     state.boardSlots = shuffle(buildBoardSlots(5));
     setStatus('');
   } else {
